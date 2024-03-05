@@ -1,13 +1,9 @@
 #ifndef RECCHECK
 //if you want to add any #includes like <iostream> you must do them here (before the next endif)
-
+#include <iostream>
 #endif
 
 #include "equal-paths.h"
-
-
-#include <iostream> //DELETE MEEEE
-
 
 using namespace std;
 
