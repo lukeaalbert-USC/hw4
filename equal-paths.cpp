@@ -33,8 +33,12 @@ bool equalPaths(Node * root) //main function
     {
         return true;
     }
+    int leftCount = countSteps(root->left);
+    int rightCount = countSteps(root->right);
 
-    if (countSteps(root->left) != countSteps(root->right)) //if the num of steps to leaf nodes at any given subtree in the tree aren't equal, the entire funt returns false
+    if ( (leftCount != rightCount) && (leftCount > 0) && (rightCount > 0))
+    //if the num of steps to leaf nodes at any given subtree in the tree aren't equal, the entire funt returns false.
+    //also, if either leftCount or rightCount = 0, then either 1 or no paths exist from a node, meaning the subtree rooted at the given node is balanced.
     {
         return false;
     }
