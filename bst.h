@@ -695,7 +695,7 @@ template<typename Key, typename Value>
 Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) const
 {
     Node<Key, Value>* finder = root_;
-    while (finder -> getItem().first != key && finder != nullptr)
+    while (finder != nullptr && finder -> getItem().first != key)
     {
         if (key < finder->getItem().first)
         {
