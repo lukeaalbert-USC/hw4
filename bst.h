@@ -250,7 +250,8 @@ protected:
 
     // Add helper functions here
     void postorderDestroyer(Node<Key, Value>* nodePtr);
-    int countSteps(Node<Key, Value>* nodePtr);
+    int countSteps(Node<Key, Value>* nodePtr) const;
+    bool balHelper(Node<Key, Value>* root) const;
 
 protected:
     Node<Key, Value>* root_;
@@ -713,7 +714,7 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
 }
 
 template<class Key, class Value>
-int BinarySearchTree<Key, Value>::countSteps(Node<Key, Value>* nodePtr) //countSteps takes a root and returns the num of steps 
+int BinarySearchTree<Key, Value>::countSteps(Node<Key, Value>* nodePtr) const //countSteps takes a root and returns the num of steps 
 //that can be taken down the tree, to the furthest leaf node
 {
     if (nodePtr == nullptr)
@@ -725,25 +726,33 @@ int BinarySearchTree<Key, Value>::countSteps(Node<Key, Value>* nodePtr) //countS
     return std::max(leftSteps, rightSteps) + 1; //"max" is taken in case either leftsteps or rightsteps reaches the base case AND to use the variable that is storing the prev countSteps return val
 }
 
+template<typename Key, typename Value>
+bool BinarySearchTree<Key, Value>::balHelper(Node<Key, Value>* root) const
+{
+    if (root == nullptr) //iff we've reached all root nodes without violating balancing property, return true
+    {
+        return true;
+    }
+
+    if (!balHelper(root -> getLeft())) return false;
+    if (!balHelper(root -> getRight())) return false;
+
+    int leftCount = countSteps(root->getLeft()); //depth of subtree rooted at root_->getLeft()
+    int rightCount = countSteps(root->getRight()); //depth of subtree rooted at root_->getRight()
+    int diff = std::abs(rightCount - leftCount); //difference between trees
+
+    return diff <= 1;
+}
+
 /**
  * Return true iff the BST is balanced.
  */
 template<typename Key, typename Value>
 bool BinarySearchTree<Key, Value>::isBalanced() const
 {
-    if (root_ == nullptr) //iff we've reached all root nodes without violating balancing property, return true
-    {
-        return true;
-    }
-
-    if (!isBalanced(root_ -> getLeft())) return false;
-    if (!isBalanced(root_ -> getRight())) return false;
-
-    int leftCount = countSteps(root_->getLeft()); //depth of subtree rooted at root_->getLeft()
-    int rightCount = countSteps(root_->getRight()); //depth of subtree rooted at root_->getRight()
-    int diff = std::abs(rightCount - leftCount); //difference between trees
-
-    return diff <= 1;
+  Node<Key, Value>* rootPointer = root_;
+  bool isBal = balHelper(rootPointer);
+  return isBal;
 }
 
 
