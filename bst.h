@@ -225,6 +225,8 @@ public:
         friend class BinarySearchTree<Key, Value>;
         iterator(Node<Key,Value>* ptr);
         Node<Key, Value> *current_;
+        //successor helper funt
+        iterator& successor();
     };
 
 public:
@@ -265,20 +267,13 @@ Begin implementations for the BinarySearchTree::iterator class.
 * Explicit constructor that initializes an iterator with a given node pointer.
 */
 template<class Key, class Value>
-BinarySearchTree<Key, Value>::iterator::iterator(Node<Key,Value> *ptr)
-{
-    // TODO
-}
+BinarySearchTree<Key, Value>::iterator::iterator(Node<Key,Value> *ptr): current_(ptr) {}
 
 /**
 * A default constructor that initializes the iterator to NULL.
 */
 template<class Key, class Value>
-BinarySearchTree<Key, Value>::iterator::iterator() 
-{
-    // TODO
-
-}
+BinarySearchTree<Key, Value>::iterator::iterator(): current_(nullptr) {}
 
 /**
 * Provides access to the item.
@@ -306,10 +301,9 @@ BinarySearchTree<Key, Value>::iterator::operator->() const
 */
 template<class Key, class Value>
 bool
-BinarySearchTree<Key, Value>::iterator::operator==(
-    const BinarySearchTree<Key, Value>::iterator& rhs) const
+BinarySearchTree<Key, Value>::iterator::operator==(const BinarySearchTree<Key, Value>::iterator& rhs) const
 {
-    // TODO
+    return (this -> current_ == rhs.current_);
 }
 
 /**
@@ -318,13 +312,57 @@ BinarySearchTree<Key, Value>::iterator::operator==(
 */
 template<class Key, class Value>
 bool
-BinarySearchTree<Key, Value>::iterator::operator!=(
-    const BinarySearchTree<Key, Value>::iterator& rhs) const
+BinarySearchTree<Key, Value>::iterator::operator!=(const BinarySearchTree<Key, Value>::iterator& rhs) const
 {
-    // TODO
-
+    return (this -> current_ != rhs.current_);
 }
 
+
+/**
+* finds successor of this ptr
+*/
+template<class Key, class Value>
+typename BinarySearchTree<Key, Value>::iterator&
+BinarySearchTree<Key, Value>::iterator::successor()
+{
+    //case where current is root_ and right subtree is empty
+    if (this -> current_ -> getParent() == nullptr && this -> current_ -> getRight() == nullptr) 
+    {
+        this -> current_ = nullptr;
+        return *this;
+    }
+
+    //case where you can take a step down first
+    if (this -> current_ -> getRight() != nullptr) 
+    {
+        this -> current_ = this -> current_ -> getRight();
+        while (this -> current_ -> getLeft() != nullptr)
+        {
+            this -> current_ = this -> current_ -> getLeft();
+        }
+        return *this;
+    }
+
+    //otherwise, this is the case where you can't take a step down so you have to move up
+    while (this -> current_ != nullptr && this -> current_ -> getParent() != nullptr && this -> current_ -> getParent() -> getLeft() != this -> current_) 
+    {
+        this -> current_ = this -> current_ -> getParent();
+    }
+
+    if (this -> current_ -> getParent() == nullptr)
+    {
+        this -> current_ = nullptr;
+        return *this;
+    }
+
+    if (this -> current_ == nullptr) //checking if current was actually smallest node in the tree. returning nullptr if so.
+    {
+        this -> current_ = nullptr;
+        return *this;
+    }
+    this -> current_ = this -> current_ -> getParent();
+    return *this;
+}
 
 /**
 * Advances the iterator's location using an in-order sequencing
@@ -333,8 +371,12 @@ template<class Key, class Value>
 typename BinarySearchTree<Key, Value>::iterator&
 BinarySearchTree<Key, Value>::iterator::operator++()
 {
-    // TODO
-
+    if (this -> current_ -> getParent() == nullptr && this -> current_ -> getLeft() == nullptr && this -> current_ -> getRight() == nullptr)
+    {
+        this -> current_ = nullptr;
+        return *this; //operator++ called on single node tree
+    }
+    return this -> successor();
 }
 
 
@@ -447,39 +489,35 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
         root_ = n;
         return;
     }
-
     Node<Key, Value>* finder = root_;
-    Node<Key, Value>* prev = root_;
+
     while (finder != nullptr)
     {
-        if (keyValuePair.first < finder->getItem().first)
+        if (keyValuePair.first == finder->getItem().first) //nodes are equal
         {
-            prev = finder;
+            finder -> setValue(keyValuePair.second);
+            return;
+        }
+        else if (keyValuePair.first < finder->getItem().first)
+        {
+            if (finder -> getLeft() == nullptr && finder -> getRight() == nullptr)
+            {
+                Node<Key, Value>* n = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, finder);
+                finder -> setLeft(n);
+                return;
+            }
             finder = finder -> getLeft();
         }
         else if(keyValuePair.first > finder->getItem().first)
         {
-            prev = finder;
+            if (finder -> getLeft() == nullptr && finder -> getRight() == nullptr)
+            {
+                Node<Key, Value>* n = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, finder);
+                finder -> setRight(n);
+                return;
+            }
             finder = finder -> getRight();
         }
-        else //found a node that is equal to input key
-        {
-            prev = finder;
-            prev -> setValue(keyValuePair.second);
-            return;
-        }
-    }
-
-    //at this point, we rely on finder being null, and prev being the node we traversed to make it null
-    if (prev -> getLeft() == finder)
-    {
-        Node<Key, Value>* n = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, prev);
-        prev -> setLeft(n);
-    }
-    else if (prev -> getRight() == finder)
-    {
-       Node<Key, Value>* n = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, prev);
-        prev -> setRight(n);
     }
 }
 
@@ -698,20 +736,14 @@ bool BinarySearchTree<Key, Value>::isBalanced() const
         return true;
     }
 
+    if (!isBalanced(root_ -> getLeft())) return false;
+    if (!isBalanced(root_ -> getRight())) return false;
+
     int leftCount = countSteps(root_->getLeft()); //depth of subtree rooted at root_->getLeft()
     int rightCount = countSteps(root_->getRight()); //depth of subtree rooted at root_->getRight()
-    int diff = std::max(leftCount, rightCount) - std::min(leftCount, rightCount); //difference between trees
+    int diff = std::abs(rightCount - leftCount); //difference between trees
 
-    if ( (diff < -1 || diff > 1) && (leftCount > 0) && (rightCount > 0))
-    /* if diff is larger than 1 or less than -1 AND leftCount and rightCount are greater than 0
-    (meaning that both and left and right subtree exist) the tree is unbalanced.
-    return false.
-    */
-    {
-        return false;
-    }
-
-    return isBalanced(root_->getLeft()) && isBalanced(root_->getRight()); //finally, we check the rest of all of the subtrees. if this hits base case, we get true.
+    return diff <= 1;
 }
 
 
