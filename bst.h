@@ -543,6 +543,7 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
 
     /*
     Case 1.5: Deleting root_ with no children
+    Case 1.5: Deleting root_ LUKE!!! u need to account for the most recent test, ie, you need to account for deleting a head_ node with 1 or 2 children. you were about to add the following code inside the if statement on line 547: nodePtr -> getLeft() == nullptr && nodePtr -> getRight() == nullptr
     */
     if (nodePtr -> getParent() == nullptr && nodePtr -> getLeft() == nullptr && nodePtr -> getRight() == nullptr)
     {
@@ -693,10 +694,6 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
         else if(key > finder->getItem().first)
         {
             finder = finder -> getRight();
-        }
-        else //found a node that is equal to input key
-        {
-            return finder;
         }
     }
     return finder;
