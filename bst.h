@@ -542,9 +542,9 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     }
 
     /*
-    Case 1.5: Deleting root_
+    Case 1.5: Deleting root_ with no children
     */
-    if (nodePtr -> getParent() == nullptr)
+    if (nodePtr -> getParent() == nullptr && nodePtr -> getLeft() == nullptr && nodePtr -> getRight() == nullptr)
     {
         delete nodePtr;
         root_ = nullptr;
@@ -588,24 +588,13 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
         //step 1: change childs parent pointer to nodePtrs parent
         if (nodePtr -> getLeft() == nullptr)
         {
-            child = nodePtr -> getRight();
-            child -> setParent(nodePtr -> getParent());
+           child = nodePtr -> getRight();
         }
         else
         {
-            child = nodePtr -> getLeft();
-            child -> setParent(nodePtr -> getParent());
+           child = nodePtr -> getLeft();
         }
-
-        //step 2: change parents child pointer to nodePtrs child
-        if (nodePtr -> getParent() -> getRight() == nodePtr)
-        {
-            nodePtr -> getParent() -> setRight(child);
-        }
-        else if (nodePtr -> getParent() -> getLeft() == nodePtr)
-        {
-            nodePtr -> getParent() -> setLeft(child);
-        }
+        nodeSwap(nodePtr, child);
         delete nodePtr;
         return;
     }
