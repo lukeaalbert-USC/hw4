@@ -529,7 +529,7 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 * should swap with the predecessor and then remove.
 */
 template<typename Key, typename Value>
-void BinarySearchTree<Key, Value>::remove(const Key& key)
+void BinarySearchTree<Key, Value>::remove(const Key& key) 
 {
     Node<Key, Value>* nodePtr = internalFind(key);
 
