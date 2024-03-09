@@ -350,11 +350,13 @@ BinarySearchTree<Key, Value>::iterator::successor()
         this -> current_ = this -> current_ -> getParent();
     }
 
+    /*
     if (this -> current_ -> getParent() == nullptr)
     {
         this -> current_ = nullptr;
         return *this;
     }
+    */
 
     if (this -> current_ == nullptr) //checking if current was actually smallest node in the tree. returning nullptr if so.
     {
@@ -374,8 +376,8 @@ BinarySearchTree<Key, Value>::iterator::operator++()
 {
     if (this -> current_ -> getParent() == nullptr && this -> current_ -> getLeft() == nullptr && this -> current_ -> getRight() == nullptr)
     {
-        this -> current_ = nullptr;
-        return *this; //operator++ called on single node tree
+      this -> current_ = nullptr;
+      return *this; //operator++ called on single node tree
     }
     return this -> successor();
 }
@@ -501,7 +503,7 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
         }
         else if (keyValuePair.first < finder->getItem().first)
         {
-            if (finder -> getLeft() == nullptr && finder -> getRight() == nullptr)
+            if (finder -> getLeft() == nullptr)
             {
                 Node<Key, Value>* n = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, finder);
                 finder -> setLeft(n);
@@ -511,7 +513,7 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
         }
         else if(keyValuePair.first > finder->getItem().first)
         {
-            if (finder -> getLeft() == nullptr && finder -> getRight() == nullptr)
+            if (finder -> getRight() == nullptr)
             {
                 Node<Key, Value>* n = new Node<Key, Value>(keyValuePair.first, keyValuePair.second, finder);
                 finder -> setRight(n);
@@ -538,18 +540,34 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
     if (nodePtr == nullptr)
     {
-        return;
+      std::cout << "f1" << std::endl;
+      return;
     }
 
     /*
-    Case 1.5: Deleting root_ with no children
-    Case 1.5: Deleting root_ LUKE!!! u need to account for the most recent test, ie, you need to account for deleting a head_ node with 1 or 2 children. you were about to add the following code inside the if statement on line 547: nodePtr -> getLeft() == nullptr && nodePtr -> getRight() == nullptr
+    Case 1.5: Deleting root_ with either NO children or ONE child
     */
-    if (nodePtr -> getParent() == nullptr && nodePtr -> getLeft() == nullptr && nodePtr -> getRight() == nullptr)
+    if (nodePtr -> getParent() == nullptr)
     {
-        delete nodePtr;
-        root_ = nullptr;
-        return;
+      std::cout << "f1.5" << std::endl;
+        if (nodePtr->getLeft() == nullptr && nodePtr->getRight() != nullptr) //only a right node
+        { 
+          root_ = nodePtr -> getRight();
+          delete nodePtr;
+          return;
+        }
+      else if (nodePtr->getLeft() != nullptr && nodePtr->getRight() == nullptr) //only a left node
+        { 
+          root_ = nodePtr -> getLeft();
+          delete nodePtr;
+          return;
+        }
+        else if (nodePtr -> getLeft() == nullptr && nodePtr -> getRight() == nullptr) //neither left or right node
+        {
+          delete nodePtr;
+          root_ = nullptr;
+          return;
+        }
     }
 
     /*
@@ -557,17 +575,57 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
     if (nodePtr->getLeft() != nullptr && nodePtr->getRight() != nullptr)
     {
-        Node<Key, Value>* pred = predecessor(nodePtr);
-        nodeSwap(nodePtr, pred);
-        remove(key); //assuming that swapNode swaps nodes pointing to the nodes, but not the actual address of nodes.
-        return;
+        std::cout << "f2" << std::endl;
+        while (nodePtr->getLeft() != nullptr && nodePtr->getRight() != nullptr)
+        {
+          Node<Key, Value>* pred = predecessor(nodePtr);
+          std::cout << "about to swap nodePtr, which is " << nodePtr -> getKey() << ", with it's pred, which is " << pred -> getKey() << std::endl;
+          nodeSwap(nodePtr, predecessor(nodePtr));
+        }
+        if (nodePtr->getLeft() != nullptr || nodePtr->getRight() != nullptr)
+        {
+            Node<Key, Value>* child;
+            if (nodePtr -> getLeft() == nullptr)
+            {
+              child = nodePtr -> getRight();
+            }
+            else
+            {
+              child = nodePtr -> getLeft();
+            }
+            if (nodePtr -> getParent() -> getRight() == nodePtr) // is a right child
+            {
+              nodePtr -> getParent() -> setRight(nodePtr -> getRight()); //set parent's child
+            }
+            else // is a left child
+            {
+              nodePtr -> getParent() -> setLeft(child); //set parent's child
+            }
+
+            child -> setParent(nodePtr -> getParent()); //set childs's parent
+            delete nodePtr; //DELETE!
+        }
+        else
+        {
+          if (nodePtr -> getParent() -> getLeft() == nodePtr)
+          {
+            nodePtr -> getParent() -> setLeft(nullptr);
+          }
+          else if (nodePtr -> getParent() -> getRight() == nodePtr)
+          {
+            nodePtr -> getParent() -> setRight(nullptr);
+          }
+          delete nodePtr;
+          return;
+          }
     }
 
     /*
-    Case 3: Node has no children.
+    Case 3: Node has no children (non root_ case)
     */
     if (nodePtr->getLeft() == nullptr && nodePtr->getRight() == nullptr)
     {
+      std::cout << "f3" << std::endl;
         if (nodePtr -> getParent() -> getLeft() == nodePtr)
         {
             nodePtr -> getParent() -> setLeft(nullptr);
@@ -581,23 +639,34 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     }
 
     /*
-    Case 4: Node has one child.
+    Case 4: Node has one child (non root_ case)
     */
    if (nodePtr->getLeft() == nullptr || nodePtr->getRight() == nullptr)
    {
-        Node<Key, Value>* child;
-        //step 1: change childs parent pointer to nodePtrs parent
-        if (nodePtr -> getLeft() == nullptr)
-        {
-           child = nodePtr -> getRight();
-        }
-        else
-        {
-           child = nodePtr -> getLeft();
-        }
-        nodeSwap(nodePtr, child);
-        delete nodePtr;
-        return;
+    std::cout << "f4" << std::endl;
+    Node<Key, Value>* child;
+      if (nodePtr -> getLeft() == nullptr)
+      {
+        child = nodePtr -> getRight();
+      }
+      else
+      {
+        child = nodePtr -> getLeft();
+      }
+      if (nodePtr -> getParent() -> getRight() == nodePtr) // is a right child
+      {
+        nodePtr -> getParent() -> setRight(nodePtr -> getRight()); //set parent's child
+      }
+      else // is a left child
+      {
+        nodePtr -> getParent() -> setLeft(child); //set parent's child
+      }
+
+      child -> setParent(nodePtr -> getParent()); //set childs's parent
+      delete nodePtr; //DELETE!
+
+      std::cout << "deleting " << nodePtr -> getKey() << std::endl;
+      std::cout << "new head is " << root_ -> getKey() << " who has (right) child " << root_ -> getRight() -> getKey() << std::endl;
     }
 }
 
@@ -619,8 +688,9 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
         current = current -> getLeft();
         while (current -> getRight() != nullptr)
         {
-            current = current -> getRight();
+          current = current -> getRight();
         }
+        std::cout << "returning " << current -> getKey() << "from pred function" << std::endl;
         return current;
     }
 
@@ -689,11 +759,11 @@ Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) con
     {
         if (key < finder->getItem().first)
         {
-            finder = finder -> getLeft();
+          finder = finder -> getLeft();
         }
         else if(key > finder->getItem().first)
         {
-            finder = finder -> getRight();
+          finder = finder -> getRight();
         }
     }
     return finder;
