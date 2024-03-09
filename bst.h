@@ -252,6 +252,9 @@ protected:
     void postorderDestroyer(Node<Key, Value>* nodePtr);
     int countSteps(Node<Key, Value>* nodePtr) const;
     bool balHelper(Node<Key, Value>* root) const;
+    void f2(Node<Key, Value>* nodePtr);
+    void f3(Node<Key, Value>* nodePtr);
+    void f4(Node<Key, Value>* nodePtr);
 
 protected:
     Node<Key, Value>* root_;
@@ -531,6 +534,73 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 * should swap with the predecessor and then remove.
 */
 template<typename Key, typename Value>
+void BinarySearchTree<Key, Value>::f2(Node<Key, Value>* nodePtr)
+{
+        std::cout << "f2" << std::endl;
+        while (nodePtr->getLeft() != nullptr && nodePtr->getRight() != nullptr)
+        {
+          Node<Key, Value>* pred = predecessor(nodePtr);
+          std::cout << "about to swap nodePtr, which is " << nodePtr -> getKey() << ", with it's pred, which is " << pred -> getKey() << std::endl;
+          nodeSwap(nodePtr, predecessor(nodePtr));
+        }
+        if (nodePtr->getLeft() != nullptr || nodePtr->getRight() != nullptr)
+        {
+          f4(nodePtr);
+          return;
+        }
+        else
+        {
+          f3(nodePtr);
+          return;
+        }
+}
+
+template<typename Key, typename Value>
+void BinarySearchTree<Key, Value>::f3(Node<Key, Value>* nodePtr)
+{
+        std::cout << "f3" << std::endl;
+        if (nodePtr -> getParent() -> getLeft() == nodePtr)
+        {
+            nodePtr -> getParent() -> setLeft(nullptr);
+        }
+        else if (nodePtr -> getParent() -> getRight() == nodePtr)
+        {
+            nodePtr -> getParent() -> setRight(nullptr);
+        }
+        delete nodePtr;
+        return;
+}
+
+template<typename Key, typename Value>
+void BinarySearchTree<Key, Value>::f4(Node<Key, Value>* nodePtr)
+{
+    std::cout << "f4" << std::endl;
+    Node<Key, Value>* child;
+      if (nodePtr -> getLeft() == nullptr)
+      {
+        child = nodePtr -> getRight();
+      }
+      else
+      {
+        child = nodePtr -> getLeft();
+      }
+      if (nodePtr -> getParent() -> getRight() == nodePtr) // is a right child
+      {
+        nodePtr -> getParent() -> setRight(nodePtr -> getRight()); //set parent's child
+      }
+      else // is a left child
+      {
+        nodePtr -> getParent() -> setLeft(child); //set parent's child
+      }
+
+      child -> setParent(nodePtr -> getParent()); //set childs's parent
+      delete nodePtr; //DELETE!
+
+      std::cout << "deleting " << nodePtr -> getKey() << std::endl;
+      std::cout << "new head is " << root_ -> getKey() << " who has (right) child " << root_ -> getRight() -> getKey() << std::endl;
+}
+
+template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::remove(const Key& key) 
 {
     Node<Key, Value>* nodePtr = internalFind(key);
@@ -575,49 +645,8 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
     if (nodePtr->getLeft() != nullptr && nodePtr->getRight() != nullptr)
     {
-        std::cout << "f2" << std::endl;
-        while (nodePtr->getLeft() != nullptr && nodePtr->getRight() != nullptr)
-        {
-          Node<Key, Value>* pred = predecessor(nodePtr);
-          std::cout << "about to swap nodePtr, which is " << nodePtr -> getKey() << ", with it's pred, which is " << pred -> getKey() << std::endl;
-          nodeSwap(nodePtr, predecessor(nodePtr));
-        }
-        if (nodePtr->getLeft() != nullptr || nodePtr->getRight() != nullptr)
-        {
-            Node<Key, Value>* child;
-            if (nodePtr -> getLeft() == nullptr)
-            {
-              child = nodePtr -> getRight();
-            }
-            else
-            {
-              child = nodePtr -> getLeft();
-            }
-            if (nodePtr -> getParent() -> getRight() == nodePtr) // is a right child
-            {
-              nodePtr -> getParent() -> setRight(nodePtr -> getRight()); //set parent's child
-            }
-            else // is a left child
-            {
-              nodePtr -> getParent() -> setLeft(child); //set parent's child
-            }
-
-            child -> setParent(nodePtr -> getParent()); //set childs's parent
-            delete nodePtr; //DELETE!
-        }
-        else
-        {
-          if (nodePtr -> getParent() -> getLeft() == nodePtr)
-          {
-            nodePtr -> getParent() -> setLeft(nullptr);
-          }
-          else if (nodePtr -> getParent() -> getRight() == nodePtr)
-          {
-            nodePtr -> getParent() -> setRight(nullptr);
-          }
-          delete nodePtr;
-          return;
-          }
+      f2(nodePtr);
+      return;
     }
 
     /*
@@ -625,17 +654,8 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
     if (nodePtr->getLeft() == nullptr && nodePtr->getRight() == nullptr)
     {
-      std::cout << "f3" << std::endl;
-        if (nodePtr -> getParent() -> getLeft() == nodePtr)
-        {
-            nodePtr -> getParent() -> setLeft(nullptr);
-        }
-        else if (nodePtr -> getParent() -> getRight() == nodePtr)
-        {
-            nodePtr -> getParent() -> setRight(nullptr);
-        }
-        delete nodePtr;
-        return;
+      f3(nodePtr);
+      return;
     }
 
     /*
@@ -643,31 +663,9 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
    if (nodePtr->getLeft() == nullptr || nodePtr->getRight() == nullptr)
    {
-    std::cout << "f4" << std::endl;
-    Node<Key, Value>* child;
-      if (nodePtr -> getLeft() == nullptr)
-      {
-        child = nodePtr -> getRight();
-      }
-      else
-      {
-        child = nodePtr -> getLeft();
-      }
-      if (nodePtr -> getParent() -> getRight() == nodePtr) // is a right child
-      {
-        nodePtr -> getParent() -> setRight(nodePtr -> getRight()); //set parent's child
-      }
-      else // is a left child
-      {
-        nodePtr -> getParent() -> setLeft(child); //set parent's child
-      }
-
-      child -> setParent(nodePtr -> getParent()); //set childs's parent
-      delete nodePtr; //DELETE!
-
-      std::cout << "deleting " << nodePtr -> getKey() << std::endl;
-      std::cout << "new head is " << root_ -> getKey() << " who has (right) child " << root_ -> getRight() -> getKey() << std::endl;
-    }
+    f4(nodePtr);
+    return;
+   }
 }
 
 
