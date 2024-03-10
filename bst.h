@@ -499,12 +499,12 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 
     while (finder != nullptr)
     {
-        if (keyValuePair.first == finder->getItem().first) //nodes are equal
+        if (keyValuePair.first == finder->getKey()) //nodes are equal
         {
             finder -> setValue(keyValuePair.second);
             return;
         }
-        else if (keyValuePair.first < finder->getItem().first)
+        else if (keyValuePair.first < finder->getKey())
         {
             if (finder -> getLeft() == nullptr)
             {
@@ -514,7 +514,7 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
             }
             finder = finder -> getLeft();
         }
-        else if(keyValuePair.first > finder->getItem().first)
+        else if(keyValuePair.first > finder->getKey())
         {
             if (finder -> getRight() == nullptr)
             {
@@ -623,12 +623,14 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
         if (nodePtr->getLeft() == nullptr && nodePtr->getRight() != nullptr) //only a right node
         { 
           root_ = nodePtr -> getRight();
+          root_ -> setParent(nullptr);
           delete nodePtr;
           return;
         }
       else if (nodePtr->getLeft() != nullptr && nodePtr->getRight() == nullptr) //only a left node
         { 
           root_ = nodePtr -> getLeft();
+          root_ -> setParent(nullptr);
           delete nodePtr;
           return;
         }
@@ -639,7 +641,6 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
           return;
         }
     }
-
     /*
     Case 2: Node has two children.
     */
@@ -648,7 +649,6 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
       f2(nodePtr);
       return;
     }
-
     /*
     Case 3: Node has no children (non root_ case)
     */
@@ -657,7 +657,6 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
       f3(nodePtr);
       return;
     }
-
     /*
     Case 4: Node has one child (non root_ case)
     */
@@ -753,7 +752,7 @@ template<typename Key, typename Value>
 Node<Key, Value>* BinarySearchTree<Key, Value>::internalFind(const Key& key) const
 {
     Node<Key, Value>* finder = root_;
-    while (finder != nullptr && finder -> getItem().first != key)
+    while (finder != nullptr && finder -> getKey() != key)
     {
         if (key < finder->getItem().first)
         {
