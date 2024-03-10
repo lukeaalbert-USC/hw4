@@ -536,11 +536,8 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::f2(Node<Key, Value>* nodePtr)
 {
-        std::cout << "f2" << std::endl;
         while (nodePtr->getLeft() != nullptr && nodePtr->getRight() != nullptr)
         {
-          Node<Key, Value>* pred = predecessor(nodePtr);
-          std::cout << "about to swap nodePtr, which is " << nodePtr -> getKey() << ", with it's pred, which is " << pred -> getKey() << std::endl;
           nodeSwap(nodePtr, predecessor(nodePtr));
         }
         if (nodePtr->getLeft() != nullptr || nodePtr->getRight() != nullptr)
@@ -558,7 +555,6 @@ void BinarySearchTree<Key, Value>::f2(Node<Key, Value>* nodePtr)
 template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::f3(Node<Key, Value>* nodePtr)
 {
-        std::cout << "f3" << std::endl;
         if (nodePtr -> getParent() -> getLeft() == nodePtr)
         {
             nodePtr -> getParent() -> setLeft(nullptr);
@@ -574,30 +570,27 @@ void BinarySearchTree<Key, Value>::f3(Node<Key, Value>* nodePtr)
 template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::f4(Node<Key, Value>* nodePtr)
 {
-    std::cout << "f4" << std::endl;
     Node<Key, Value>* child;
       if (nodePtr -> getLeft() == nullptr)
       {
         child = nodePtr -> getRight();
+        nodePtr -> getRight() -> setParent(nodePtr -> getParent());
       }
       else
       {
         child = nodePtr -> getLeft();
+        nodePtr -> getLeft() -> setParent(nodePtr -> getParent());
       }
+
       if (nodePtr -> getParent() -> getRight() == nodePtr) // is a right child
       {
-        nodePtr -> getParent() -> setRight(nodePtr -> getRight()); //set parent's child
+        nodePtr -> getParent() -> setRight(child); //set parent's child
       }
       else // is a left child
       {
         nodePtr -> getParent() -> setLeft(child); //set parent's child
       }
-
-      child -> setParent(nodePtr -> getParent()); //set childs's parent
       delete nodePtr; //DELETE!
-
-      std::cout << "deleting " << nodePtr -> getKey() << std::endl;
-      std::cout << "new head is " << root_ -> getKey() << " who has (right) child " << root_ -> getRight() -> getKey() << std::endl;
 }
 
 template<typename Key, typename Value>
@@ -610,7 +603,6 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
     if (nodePtr == nullptr)
     {
-      std::cout << "f1" << std::endl;
       return;
     }
 
@@ -619,7 +611,6 @@ void BinarySearchTree<Key, Value>::remove(const Key& key)
     */
     if (nodePtr -> getParent() == nullptr)
     {
-      std::cout << "f1.5" << std::endl;
         if (nodePtr->getLeft() == nullptr && nodePtr->getRight() != nullptr) //only a right node
         { 
           root_ = nodePtr -> getRight();
@@ -687,7 +678,6 @@ BinarySearchTree<Key, Value>::predecessor(Node<Key, Value>* current)
         {
           current = current -> getRight();
         }
-        std::cout << "returning " << current -> getKey() << "from pred function" << std::endl;
         return current;
     }
 
