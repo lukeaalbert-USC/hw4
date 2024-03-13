@@ -137,8 +137,11 @@ protected:
     virtual void nodeSwap( AVLNode<Key,Value>* n1, AVLNode<Key,Value>* n2);
 
     // Add helper functions here
-
-
+    void insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Value>* node);
+    bool ZigZig(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
+    bool ZigZag(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
+    void rotateRight(AVLNode<Key,Value>* node);
+    void rotateLeft(AVLNode<Key,Value>* node);
 };
 
 /*
@@ -148,7 +151,65 @@ protected:
 template<class Key, class Value>
 void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
 {
-    // TODO
+    //check if head
+    if (this -> root_ == nullptr)
+    {
+
+        Node<Key, Value>* newRoot = new AVLNode<Key, Value>(new_item.first, new_item.second, nullptr); //be careful of dynamic data here!!! you may be allocating data that could cause leaks. 
+        this -> root_ = newRoot;
+        return;
+    }
+
+    //vars to find spot in tree
+    AVLNode<Key, Value>* finder = dynamic_cast<AVLNode<Key, Value>*>(this -> root_);
+
+    //find spot in tree
+    while (finder != nullptr)
+    {
+        if (new_item.first == finder->getKey()) //nodes are equal
+        {
+            finder -> setValue(new_item.second);
+            return;
+        }
+
+        else if (new_item.first < finder->getKey()) //move in left direction
+        {
+            if (finder -> getLeft() == nullptr)
+            {
+                AVLNode<Key, Value>* n = new AVLNode<Key, Value>(new_item.first, new_item.second, finder); //be careful of dynamic data here!!! you may be allocating data that could cause leaks. 
+                finder -> setLeft(n);
+                if (n -> getParent() -> getBalance() == 1 || n -> getParent() -> getBalance() == -1)
+                {
+                    return;
+                }
+                else
+                {
+                   insertFix(n -> getParent(), n); 
+                   return;
+                }
+            }
+            finder = finder -> getLeft();
+        }
+
+        else if(new_item.first > finder->getKey()) //move in right direction
+        {
+            if (finder -> getRight() == nullptr)
+            {
+                AVLNode<Key, Value>* n = new AVLNode<Key, Value>(new_item.first, new_item.second, finder); //be careful of dynamic data here!!! you may be allocating data that could cause leaks. 
+                finder -> setRight(n);
+                if (n -> getParent() -> getBalance() == 1 || n -> getParent() -> getBalance() == -1)
+                {
+                    return;
+                }
+                else
+                {
+                   insertFix(n -> getParent(), n);
+                   return;
+                }
+            }
+            finder = finder -> getRight();
+        }
+    }
 }
 
 /*
@@ -171,4 +232,132 @@ void AVLTree<Key, Value>::nodeSwap( AVLNode<Key,Value>* n1, AVLNode<Key,Value>* 
 }
 
 
+/*
+HELPER
+FUNCTIONS
+*/
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Value>* child)
+{
+    if (parent == nullptr || parent -> getParent() == nullptr) //base case
+    {
+        return;
+    }
+
+    AVLNode<Key,Value>* grandParent = parent -> getParent(); //declare grandparent
+
+    if (grandParent -> getLeft() == parent) //Left Rotation Case
+    {
+        grandParent -> updateBalance(-1);
+        if (grandParent -> getBalance() == 0)
+        {
+            return;
+        }
+        else if (grandParent -> getBalance() == -1)
+        {
+            insertFix(grandParent, parent);
+        }
+        else if (grandParent -> getBalance() == -2)
+        {
+            if (ZigZig(child, grandParent))
+            {
+                rotateRight(grandParent);
+                grandParent -> setBalance(0);
+                parent -> setBalance(0);
+            }
+            else if (ZigZag(child, grandParent))
+            {
+                rotateLeft(parent);
+                rotateRight(grandParent);
+                if (child -> getBalance() == -1)
+                {
+                    parent -> updateBalance(0);
+                    grandParent -> updateBalance(1);
+                    child -> updateBalance(0);
+                }
+                else if (child -> getBalance() == 0)
+                {
+                    parent -> updateBalance(0);
+                    grandParent -> updateBalance(0);
+                    child -> updateBalance(0);
+                }
+                else if (child -> getBalance() == 1)
+                {
+                    parent -> updateBalance(-1);
+                    grandParent -> updateBalance(0);
+                    child -> updateBalance(0);
+                }
+            }
+        }
+    }
+
+    else if (grandParent -> getRight() == parent)
+    {
+        grandParent -> updateBalance(1);
+        if (grandParent -> getBalance() == 0)
+        {
+            return;
+        }
+        else if (grandParent -> getBalance() == 1)
+        {
+            insertFix(grandParent, parent);
+        }
+        else if (grandParent -> getBalance() == 2)
+        {
+            if (ZigZig(child, grandParent))
+            {
+                rotateLeft(grandParent);
+                grandParent -> setBalance(0);
+                parent -> setBalance(0);
+            }
+            else if (ZigZag(child, grandParent))
+            {
+                rotateRight(parent);
+                rotateLeft(grandParent);
+                if (child -> getBalance() == 1)
+                {
+                    parent -> updateBalance(0);
+                    grandParent -> updateBalance(-1);
+                    child -> updateBalance(0);
+                }
+                else if (child -> getBalance() == 0)
+                {
+                    parent -> updateBalance(0);
+                    grandParent -> updateBalance(0);
+                    child -> updateBalance(0);
+                }
+                else if (child -> getBalance() == -1)
+                {
+                    parent -> updateBalance(1);
+                    grandParent -> updateBalance(0);
+                    child -> updateBalance(0);
+                }
+            }
+        }
+    }
+}
+
+template<class Key, class Value>
+bool AVLTree<Key, Value>::ZigZig(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
+{
+   return (grandParent -> getLeft() -> getLeft() == child || grandParent -> getRight() -> getRight() == child);
+}
+
+template<class Key, class Value>
+bool AVLTree<Key, Value>::ZigZag(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
+{
+   return (grandParent -> getLeft() -> getRight() == child || grandParent -> getRight() -> getLeft() == child);
+}
+template<class Key, class Value>
+void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* node)
+{
+    return; //update me!!!
+}
+
+template<class Key, class Value>
+void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
+{
+    return; //update me!!!
+}
 #endif
