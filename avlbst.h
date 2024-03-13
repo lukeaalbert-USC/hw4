@@ -138,8 +138,10 @@ protected:
 
     // Add helper functions here
     void insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Value>* node);
-    bool ZigZig(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
-    bool ZigZag(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
+    bool ZigZigLeft(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
+    bool ZigZigRight(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
+    bool ZigZagLeft(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
+    bool ZigZagRight(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
     void rotateRight(AVLNode<Key,Value>* node);
     void rotateLeft(AVLNode<Key,Value>* node);
     void removeFix(AVLNode<Key,Value>* parent, int& diff);
@@ -151,7 +153,7 @@ protected:
  */
 template<class Key, class Value>
 void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
-{
+{ std::cout << "Insert Called" << std::endl; 
     //check if head
     if (this -> root_ == nullptr)
     {
@@ -186,6 +188,7 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
                 }
                 else
                 {
+                   finder -> updateBalance(-1);
                    insertFix(finder, n); 
                    return;
                 }
@@ -206,8 +209,9 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
                 }
                 else
                 {
-                   insertFix(finder, n);
-                   return;
+                  finder -> updateBalance(1);
+                  insertFix(finder, n);
+                  return;
                 }
             }
             finder = finder -> getRight();
@@ -332,7 +336,7 @@ FUNCTIONS
 
 template<class Key, class Value>
 void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Value>* child)
-{
+{ std::cout << "InsertFix Called" << std::endl; 
     if (parent == nullptr || parent -> getParent() == nullptr) //base case
     {
         return;
@@ -349,17 +353,17 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Valu
         }
         else if (grandParent -> getBalance() == -1)
         {
-            insertFix(grandParent, parent);
+          insertFix(grandParent, parent);
         }
         else if (grandParent -> getBalance() == -2)
         {
-            if (ZigZig(child, grandParent))
+            if (ZigZigLeft(child, grandParent))
             {
                 rotateRight(grandParent);
                 grandParent -> setBalance(0);
                 parent -> setBalance(0);
             }
-            else if (ZigZag(child, grandParent))
+            else if (ZigZagLeft(child, grandParent))
             {
                 rotateLeft(parent);
                 rotateRight(grandParent);
@@ -398,13 +402,13 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Valu
         }
         else if (grandParent -> getBalance() == 2)
         {
-            if (ZigZig(child, grandParent))
+            if (ZigZigRight(child, grandParent))
             {
                 rotateLeft(grandParent);
                 grandParent -> setBalance(0);
                 parent -> setBalance(0);
             }
-            else if (ZigZag(child, grandParent))
+            else if (ZigZagRight(child, grandParent))
             {
                 rotateRight(parent);
                 rotateLeft(grandParent);
@@ -432,19 +436,32 @@ void AVLTree<Key, Value>::insertFix(AVLNode<Key,Value>* parent, AVLNode<Key,Valu
 }
 
 template<class Key, class Value>
-bool AVLTree<Key, Value>::ZigZig(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
+bool AVLTree<Key, Value>::ZigZigLeft(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
 {
-   return (grandParent -> getLeft() -> getLeft() == child || grandParent -> getRight() -> getRight() == child);
+  return (grandParent -> getLeft() -> getLeft() == child);
 }
 
 template<class Key, class Value>
-bool AVLTree<Key, Value>::ZigZag(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
+bool AVLTree<Key, Value>::ZigZigRight(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
 {
-   return (grandParent -> getLeft() -> getRight() == child || grandParent -> getRight() -> getLeft() == child);
+  return (grandParent -> getRight() -> getRight() == child);
 }
+template<class Key, class Value>
+bool AVLTree<Key, Value>::ZigZagLeft(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
+{
+   return (grandParent -> getLeft() -> getRight() == child);
+}
+
+template<class Key, class Value>
+bool AVLTree<Key, Value>::ZigZagRight(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent)
+{
+   return (grandParent -> getRight() -> getLeft() == child);
+}
+
 template<class Key, class Value>
 void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* node)
 {
+  std::cout << "RR Called" << std::endl; 
     AVLNode<Key,Value>* newParent = node -> getLeft();
 
     if (newParent == nullptr) //checking if invalid rotateRight call (for clarity)
@@ -482,6 +499,7 @@ void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* node)
 template<class Key, class Value>
 void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
 {
+  std::cout << "RL Called" << std::endl; 
     AVLNode<Key,Value>* newParent = node -> getRight();
 
     if (newParent == nullptr) //checking if invalid rotateRight call (for clarity)
