@@ -142,6 +142,7 @@ protected:
     bool ZigZag(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
     void rotateRight(AVLNode<Key,Value>* node);
     void rotateLeft(AVLNode<Key,Value>* node);
+    void removeFix(AVLNode<Key,Value>* parent, int& diff);
 };
 
 /*
@@ -216,10 +217,100 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
  * Recall: The writeup specifies that if a node has 2 children you
  * should swap with the predecessor and then remove.
  */
+
 template<class Key, class Value>
 void AVLTree<Key, Value>:: remove(const Key& key)
 {
-    // TODO
+    AVLNode<Key, Value>* toRemove = dynamic_cast<AVLNode<Key, Value>*>(this -> internalFind(key)); //get node to remove
+
+    if (toRemove == nullptr) //if not found, return
+    {
+        return;
+    }
+
+    if (toRemove -> getLeft() != nullptr && toRemove -> getRight() != nullptr) //2 child case
+    {
+        AVLNode<Key, Value>* predecessor = dynamic_cast<AVLNode<Key, Value>*>(this -> predecessor(dynamic_cast<Node<Key, Value>*>(toRemove)));
+        nodeSwap(toRemove, predecessor);
+    }
+
+    //at this point, it's assumed that toRemove has either NO or only ONE child
+    AVLNode<Key, Value>* parent = toRemove -> getParent();
+    int diff;
+
+    if (parent != nullptr)
+    {
+        if (parent -> getLeft() == toRemove)
+        {
+            diff = 1;
+            parent -> updateBalance(1);
+        }
+        else if (parent -> getRight() == toRemove)
+        {
+            diff = -1;
+            parent -> updateBalance(-1);
+        }
+    }
+
+    if (parent == nullptr) //root case with either 1 or 0 children. recall, root can only have bal of 1, 0, or -1.
+    {
+        if (toRemove -> getBalance() == 0) //single root_ node
+        {
+            delete toRemove;
+            this -> root_ = nullptr;
+        }
+        else if (toRemove -> getBalance() == 1) //root_ node with single right child
+        {
+            nodeSwap(toRemove, toRemove -> getRight());
+            delete toRemove;
+        }
+        else if (toRemove -> getBalance() == -1)//root_ node with single left child
+        {
+            nodeSwap(toRemove, toRemove -> getLeft());
+            delete toRemove;
+        }
+        return;
+    }
+
+    if (toRemove -> getLeft() == nullptr && toRemove -> getRight() == nullptr) //no children case
+    {
+        if (parent -> getLeft() == toRemove)
+        {
+            parent -> setLeft(nullptr);
+        }
+        else
+        {
+            parent -> setRight(nullptr);
+        }
+        delete toRemove;
+    }
+
+    else if (toRemove -> getLeft() == nullptr || toRemove -> getRight() == nullptr) //single child case
+    {
+        if (parent -> getLeft() == toRemove && toRemove -> getLeft() != nullptr)
+        {
+            parent -> setLeft(toRemove -> getLeft());
+            toRemove -> getLeft() -> setParent(parent);
+        }
+        else if (parent -> getLeft() == toRemove && toRemove -> getRight() != nullptr)
+        {
+            parent -> setLeft(toRemove -> getRight());
+            toRemove -> getRight() -> setParent(parent);
+        }
+        else if (parent -> getRight() == toRemove && toRemove -> getLeft() != nullptr)
+        {
+            parent -> setRight(toRemove -> getLeft());
+            toRemove -> getLeft() -> setParent(parent);
+        }
+        else if (parent -> getRight() == toRemove && toRemove -> getRight() != nullptr)
+        {
+            parent -> setRight(toRemove -> getRight());
+            toRemove -> getRight() -> setParent(parent);
+        }
+        delete toRemove;
+    }
+
+    removeFix(parent, diff);
 }
 
 template<class Key, class Value>
@@ -422,5 +513,10 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
         newParent -> setLeft(node); //root right changes to node
         return;
     }
+}
+template <class Key, class Value>
+void AVLTree<Key, Value>::removeFix(AVLNode<Key,Value>* parent, int& diff)
+{
+    return; //update me!!
 }
 #endif
