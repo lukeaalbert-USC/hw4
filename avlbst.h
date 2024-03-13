@@ -352,12 +352,75 @@ bool AVLTree<Key, Value>::ZigZag(AVLNode<Key,Value>* child, AVLNode<Key,Value>* 
 template<class Key, class Value>
 void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* node)
 {
-    return; //update me!!!
+    AVLNode<Key,Value>* newParent = node -> getLeft();
+
+    if (newParent == nullptr) //checking if invalid rotateRight call (for clarity)
+    {
+        return;
+    }
+
+    if (node == this -> root_) //root case
+    {
+        this -> root_ = newParent; //root_ is now left child
+        newParent -> setParent(nullptr); // root parent has to be null
+        node -> setLeft(newParent->getRight()); //node's left val is it's left child's right val(s)
+        node -> setParent(newParent); // node parent changes to node's left child
+        newParent -> setRight(node); //root right changes to node
+        return;
+    }
+    else //non-root case
+    {
+        newParent -> setParent(node -> getParent()); // new parent's parent is node's old parent
+        if (node -> getParent() -> getLeft() == node) //setting the parent of nodes child
+        {
+            node -> getParent() -> setLeft(newParent);
+        }
+        else
+        {
+            node -> getParent() -> setRight(newParent);
+        }
+        node -> setLeft(newParent->getRight()); //node's left val is it's left child's right val(s)
+        node -> setParent(newParent); // node parent changes to node's left child
+        newParent -> setRight(node); //root right changes to node
+        return;
+    }
 }
 
 template<class Key, class Value>
 void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
 {
-    return; //update me!!!
+    AVLNode<Key,Value>* newParent = node -> getRight();
+
+    if (newParent == nullptr) //checking if invalid rotateRight call (for clarity)
+    {
+        return;
+    }
+
+    if (node == this -> root_) //root case
+    {
+        this -> root_ = newParent; //root_ is now left child
+        newParent -> setParent(nullptr); // root parent has to be null
+        node -> setRight(newParent->getLeft()); //node's left val is it's left child's right val(s)
+        node -> setParent(newParent); // node parent changes to node's left child
+        newParent -> setLeft(node); //root right changes to node
+        return;
+    }
+
+    else //non-root case
+    {
+        newParent -> setParent(node -> getParent()); // new parent's parent is node's old parent
+        if (node -> getParent() -> getLeft() == node) //setting the parent of nodes child
+        {
+            node -> getParent() -> setLeft(newParent);
+        }
+        else
+        {
+            node -> getParent() -> setRight(newParent);
+        }
+        node -> setRight(newParent->getLeft()); //node's left val is it's left child's right val(s)
+        node -> setParent(newParent); // node parent changes to node's left child
+        newParent -> setLeft(node); //root right changes to node
+        return;
+    }
 }
 #endif
