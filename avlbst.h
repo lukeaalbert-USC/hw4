@@ -179,13 +179,14 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
             {
                 AVLNode<Key, Value>* n = new AVLNode<Key, Value>(new_item.first, new_item.second, finder); //be careful of dynamic data here!!! you may be allocating data that could cause leaks. 
                 finder -> setLeft(n);
-                if (n -> getParent() -> getBalance() == 1 || n -> getParent() -> getBalance() == -1)
+                if (finder -> getBalance() == 1 || finder -> getBalance() == -1)
                 {
+                    finder -> setBalance(0);
                     return;
                 }
                 else
                 {
-                   insertFix(n -> getParent(), n); 
+                   insertFix(finder, n); 
                    return;
                 }
             }
@@ -198,13 +199,14 @@ void AVLTree<Key, Value>::insert (const std::pair<const Key, Value> &new_item)
             {
                 AVLNode<Key, Value>* n = new AVLNode<Key, Value>(new_item.first, new_item.second, finder); //be careful of dynamic data here!!! you may be allocating data that could cause leaks. 
                 finder -> setRight(n);
-                if (n -> getParent() -> getBalance() == 1 || n -> getParent() -> getBalance() == -1)
+                if (finder -> getBalance() == 1 || finder -> getBalance() == -1)
                 {
+                    finder -> setBalance(0);
                     return;
                 }
                 else
                 {
-                   insertFix(n -> getParent(), n);
+                   insertFix(finder, n);
                    return;
                 }
             }
