@@ -474,8 +474,13 @@ void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* node)
         this -> root_ = newParent; //root_ is now left child
         newParent -> setParent(nullptr); // root parent has to be null
         node -> setLeft(newParent->getRight()); //node's left val is it's left child's right val(s)
+        if (node -> getLeft() != nullptr)
+        {
+          node -> getLeft() -> setParent(node);
+        }
         node -> setParent(newParent); // node parent changes to node's left child
         newParent -> setRight(node); //root right changes to node
+        std::cout << "RR preformed. new root is " << this -> root_ -> getKey() << " with left and right children, " << this -> root_ -> getLeft() -> getKey() << ", " << this -> root_ -> getRight() -> getKey() << std::endl; 
         return;
     }
     else //non-root case
@@ -489,9 +494,14 @@ void AVLTree<Key, Value>::rotateRight(AVLNode<Key,Value>* node)
         {
             node -> getParent() -> setRight(newParent);
         }
-        node -> setLeft(newParent->getRight()); //node's left val is it's left child's right val(s)
         node -> setParent(newParent); // node parent changes to node's left child
+        node -> setLeft(newParent->getRight()); //node's left val is it's left child's right val(s)
+        if (node -> getLeft() != nullptr)
+        {
+          node -> getLeft() -> setParent(node);
+        }
         newParent -> setRight(node); //root right changes to node
+        std::cout << "RR preformed. new parent is " << newParent -> getKey(); //<< " with left and right children, " << newParent -> getLeft() -> getKey() << ", " << newParent -> getRight() -> getKey() << std::endl; 
         return;
     }
 }
@@ -500,7 +510,7 @@ template<class Key, class Value>
 void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
 {
   std::cout << "RL Called" << std::endl; 
-    AVLNode<Key,Value>* newParent = node -> getRight();
+  AVLNode<Key,Value>* newParent = node -> getRight();
 
     if (newParent == nullptr) //checking if invalid rotateRight call (for clarity)
     {
@@ -512,8 +522,13 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
         this -> root_ = newParent; //root_ is now left child
         newParent -> setParent(nullptr); // root parent has to be null
         node -> setRight(newParent->getLeft()); //node's left val is it's left child's right val(s)
+        if (node -> getRight() != nullptr)
+        {
+          node -> getRight() -> setParent(node);
+        }
         node -> setParent(newParent); // node parent changes to node's left child
         newParent -> setLeft(node); //root right changes to node
+        std::cout << "RL preformed. new root is " << this -> root_ -> getKey() << " with left and right children, " << this -> root_ -> getLeft() -> getKey() << ", " << this -> root_ -> getRight() -> getKey() << std::endl; 
         return;
     }
 
@@ -522,15 +537,20 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
         newParent -> setParent(node -> getParent()); // new parent's parent is node's old parent
         if (node -> getParent() -> getLeft() == node) //setting the parent of nodes child
         {
-            node -> getParent() -> setLeft(newParent);
+          node -> getParent() -> setLeft(newParent);
         }
         else
         {
-            node -> getParent() -> setRight(newParent);
+          node -> getParent() -> setRight(newParent);
         }
-        node -> setRight(newParent->getLeft()); //node's left val is it's left child's right val(s)
         node -> setParent(newParent); // node parent changes to node's left child
+        node -> setRight(newParent->getLeft()); //node's left val is it's left child's right val(s)
+        if (node -> getRight() != nullptr)
+        {
+          node -> getRight() -> setParent(node);
+        }
         newParent -> setLeft(node); //root right changes to node
+        std::cout << "RL preformed. new parent is " << newParent -> getKey(); //<< " with left and right children, " << newParent -> getLeft() -> getKey() << ", " << newParent -> getRight() -> getKey() << std::endl; 
         return;
     }
 }
