@@ -144,7 +144,8 @@ protected:
     bool ZigZagRight(AVLNode<Key,Value>* child, AVLNode<Key,Value>* grandParent);
     void rotateRight(AVLNode<Key,Value>* node);
     void rotateLeft(AVLNode<Key,Value>* node);
-    void removeFix(AVLNode<Key,Value>* parent, int& diff);
+    void removeFix(AVLNode<Key,Value>* parent, int diff);
+    AVLNode<Key, Value>* getTaller(AVLNode<Key, Value>* left, AVLNode<Key, Value>* right);
 };
 
 /*
@@ -555,9 +556,167 @@ void AVLTree<Key, Value>::rotateLeft(AVLNode<Key,Value>* node)
         return;
     }
 }
+
 template <class Key, class Value>
-void AVLTree<Key, Value>::removeFix(AVLNode<Key,Value>* parent, int& diff)
+AVLNode<Key,Value>* AVLTree<Key, Value>::getTaller(AVLNode<Key,Value>* left, AVLNode<Key,Value>* right)
 {
-    return; //update me!!
+    if (left == nullptr)
+    {
+        return right;
+    }
+    if (right == nullptr)
+    {
+        return left;
+    }
+    if (this -> countSteps(dynamic_cast<Node<Key, Value>*>(left)) > this -> countSteps(dynamic_cast<Node<Key, Value>*>(right)))
+    {
+        return left;
+    }
+    return right;
+}
+
+template <class Key, class Value>
+void AVLTree<Key, Value>::removeFix(AVLNode<Key,Value>* n, int diff)
+{
+    if (n == nullptr) //base case
+    {
+        return;
+    }
+
+    //info for next recursive call
+    AVLNode<Key,Value>* nextParent = n -> getParent();
+    int nextDiff;
+    if (nextParent != nullptr)
+    {
+        if (nextParent -> getLeft() == n)
+        {
+            nextDiff = 1;
+        }
+        else if (nextParent -> getRight() == n)
+        {
+            nextDiff = -1;
+        }
+    }
+
+    if (diff == -1) //case where node child was a right child
+    {
+        if (n -> getBalance() + diff == -2) //new balance would be -2 (cause an inbalance)
+        {
+            //[Perform the check for the mirror case where b(n) + diff == +2, flipping left/right and -1/+1]
+            AVLNode<Key,Value>* c = getTaller(nextParent -> getLeft(), nextParent -> getRight());
+
+            if (c -> getBalance() == -1 ) //zig zig case
+            {
+                rotateRight(n);
+                n -> setBalance(0);
+                c -> setBalance(0);
+                removeFix(nextParent, nextDiff);
+            }
+            else if (c -> getBalance() == 0) //zig zig case
+            {
+                rotateRight(n);
+                n -> setBalance(-1);
+                c -> setBalance(1);
+            }
+            else if (c -> getBalance() == 1) // zig zag case
+            {
+                AVLNode<Key,Value>* g = c -> getRight();
+                rotateLeft(c);
+                rotateRight(n);
+                if (g -> getBalance() == 1)
+                {
+                    n -> setBalance(0);
+                    c -> setBalance(-1); 
+                    g -> setBalance(0);
+                }
+                else if (g -> getBalance() == 0)
+                {
+                    n -> setBalance(0);
+                    c -> setBalance(0); 
+                    g -> setBalance(0);
+                }
+                else if (g -> getBalance() == -1)
+                {
+                    n -> setBalance(1);
+                    c -> setBalance(0); 
+                    g -> setBalance(0);
+                }
+                removeFix(nextParent, nextDiff);
+            }
+            return;
+        }
+        else if (n -> getBalance() + diff == -1)
+        {
+            n -> setBalance(-1);
+            return;
+        }
+        else if (n -> getBalance() + diff == 0)
+        {
+            n -> setBalance(0);
+            removeFix(nextParent, nextDiff);
+            return;
+        }
+    }
+
+
+    if (diff == 1) //case where node child was a right child
+    {
+        if (n -> getBalance() + diff == 2) //new balance would be 2 (cause an inbalance)
+        {
+            //[Perform the check for the mirror case where b(n) + diff == -2, flipping left/right and -1/+1]
+            AVLNode<Key,Value>* c = getTaller(nextParent -> getLeft(), nextParent -> getRight());
+
+            if (c -> getBalance() == 1 ) //zig zig case
+            {
+                rotateLeft(n);
+                n -> setBalance(0);
+                c -> setBalance(0);
+                removeFix(nextParent, nextDiff);
+            }
+            else if (c -> getBalance() == 0) //zig zig case
+            {
+                rotateLeft(n);
+                n -> setBalance(1);
+                c -> setBalance(-1);
+            }
+            else if (c -> getBalance() == -1) // zig zag case
+            {
+                AVLNode<Key,Value>* g = c -> getLeft();
+                rotateRight(c);
+                rotateLeft(n);
+                if (g -> getBalance() == -1)
+                {
+                    n -> setBalance(0);
+                    c -> setBalance(1); 
+                    g -> setBalance(0);
+                }
+                else if (g -> getBalance() == 0)
+                {
+                    n -> setBalance(0);
+                    c -> setBalance(0); 
+                    g -> setBalance(0);
+                }
+                else if (g -> getBalance() == 1)
+                {
+                    n -> setBalance(-1);
+                    c -> setBalance(0); 
+                    g -> setBalance(0);
+                }
+                removeFix(nextParent, nextDiff);
+            }
+            return;
+        }
+        else if (n -> getBalance() + diff == 1)
+        {
+            n -> setBalance(1);
+            return;
+        }
+        else if (n -> getBalance() + diff == 0)
+        {
+            n -> setBalance(0);
+            removeFix(nextParent, nextDiff);
+            return;
+        }
+    }
 }
 #endif
