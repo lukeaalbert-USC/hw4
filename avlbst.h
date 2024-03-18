@@ -250,12 +250,10 @@ void AVLTree<Key, Value>:: remove(const Key& key)
         if (parent -> getLeft() == toRemove)
         {
             diff = 1;
-            parent -> updateBalance(1);
         }
         else if (parent -> getRight() == toRemove)
         {
             diff = -1;
-            parent -> updateBalance(-1);
         }
     }
 
@@ -603,7 +601,7 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key,Value>* n, int diff)
         if (n -> getBalance() + diff == -2) //new balance would be -2 (cause an inbalance)
         {
             //[Perform the check for the mirror case where b(n) + diff == +2, flipping left/right and -1/+1]
-            AVLNode<Key,Value>* c = getTaller(nextParent -> getLeft(), nextParent -> getRight());
+            AVLNode<Key,Value>* c = getTaller(n -> getLeft(), n -> getRight());
 
             if (c -> getBalance() == -1 ) //zig zig case
             {
@@ -664,7 +662,7 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key,Value>* n, int diff)
         if (n -> getBalance() + diff == 2) //new balance would be 2 (cause an inbalance)
         {
             //[Perform the check for the mirror case where b(n) + diff == -2, flipping left/right and -1/+1]
-            AVLNode<Key,Value>* c = getTaller(nextParent -> getLeft(), nextParent -> getRight());
+            AVLNode<Key,Value>* c = getTaller(n -> getLeft(), n -> getRight());
 
             if (c -> getBalance() == 1 ) //zig zig case
             {
