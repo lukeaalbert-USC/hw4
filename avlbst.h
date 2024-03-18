@@ -232,7 +232,7 @@ void AVLTree<Key, Value>:: remove(const Key& key)
 
     if (toRemove == nullptr) //if not found, return
     {
-        return;
+      return;
     }
 
     if (toRemove -> getLeft() != nullptr && toRemove -> getRight() != nullptr) //2 child case
@@ -259,20 +259,22 @@ void AVLTree<Key, Value>:: remove(const Key& key)
 
     if (parent == nullptr) //root case with either 1 or 0 children. recall, root can only have bal of 1, 0, or -1.
     {
-        if (toRemove -> getBalance() == 0) //single root_ node
+        if (toRemove -> getLeft() == nullptr && toRemove -> getRight() == nullptr) //single root_ node
         {
-            delete toRemove;
-            this -> root_ = nullptr;
+          delete toRemove;
+          this -> root_ = nullptr;
         }
-        else if (toRemove -> getBalance() == 1) //root_ node with single right child
+        else if (toRemove -> getBalance() == 1) //root_ node with right child
         {
             nodeSwap(toRemove, toRemove -> getRight());
+            toRemove -> getParent() -> setRight(nullptr);
             delete toRemove;
         }
-        else if (toRemove -> getBalance() == -1)//root_ node with single left child
+        else if (toRemove -> getBalance() == -1)//root_ node with left child
         {
-            nodeSwap(toRemove, toRemove -> getLeft());
-            delete toRemove;
+          nodeSwap(toRemove, toRemove -> getLeft());
+          toRemove -> getParent() -> setLeft(nullptr);
+          delete toRemove;
         }
         return;
     }
